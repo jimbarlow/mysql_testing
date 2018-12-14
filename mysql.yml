@@ -9,6 +9,9 @@
       copy:
         src: /tmp/epel-release-latest-7.noarch.rpm
         dest: /tmp/epel-release-latest-7.noarch.rpm
+      tags:
+        - installmysql
+        - installepel
     - name: install EPEL
       yum: 
         name: /tmp/epel-release-latest-7.noarch.rpm
@@ -26,7 +29,9 @@
         permanent: yes
         state: enabled
         immediate: yes
-      tags: firewall
+      tags: 
+        - firewall
+        - installmysql
 
     - name: create a database
       mysql_db:
@@ -49,14 +54,13 @@
         login_user: root
         login_password: secretpass
         target: /tmp/tablecreate.sql
-      tags: database_setup
+      tags: tables_setup
 
     - name: put command file on remote host
       template:
         src: dbinserts.j2
         dest: /tmp/dbinserts.sql 
       tags: 
-        - database_setup
         - records_insert
 
     - name: insert records
