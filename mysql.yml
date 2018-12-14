@@ -1,0 +1,71 @@
+---
+- name: MySQL Playground
+  vars:
+    databasename: deltatest
+  hosts: db1
+ 
+  tasks:
+    - name: Install EPEL repo file
+      copy:
+        src: /tmp/epel-release-latest-7.noarch.rpm
+        dest: /tmp/epel-release-latest-7.noarch.rpm
+    - name: install EPEL
+      yum: 
+        name: /tmp/epel-release-latest-7.noarch.rpm
+        state: present
+      tags:
+        - installmysql
+        - installepel
+    - include_role:
+        name: clusterfrak.mysql
+      tags: installmysql
+
+    - name: set firewall up for MySQL
+      firewalld:
+        port: 3306/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+      tags: firewall
+
+    - name: create a database
+      mysql_db:
+        name: "{{ databasename }}"
+        state: present 
+        login_user: root
+        login_password: secretpass
+      tags: database_setup
+      
+    - name: put command file on remote host
+      template:
+        src: tablecreate.j2
+        dest: /tmp/tablecreate.sql 
+      tags: database_setup
+
+    - name: create tables 
+      mysql_db:
+        name: "{{ databasename }}"
+        state: import 
+        login_user: root
+        login_password: secretpass
+        target: /tmp/tablecreate.sql
+      tags: database_setup
+
+    - name: put command file on remote host
+      template:
+        src: dbinserts.j2
+        dest: /tmp/dbinserts.sql 
+      tags: 
+        - database_setup
+        - records_insert
+
+    - name: insert records
+      mysql_db:
+        name: "{{ databasename }}"
+        state: import 
+        login_user: root
+        login_password: secretpass
+        target: /tmp/dbinserts.sql
+      tags: records_insert
+
+
