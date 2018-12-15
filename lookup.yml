@@ -1,0 +1,21 @@
+---
+- name: Play with the Lookup Plugin
+  vars:
+  hosts: localhost
+  tasks:
+    - name: set an environment variable  fact with the lookup plugin
+      set_fact:
+        jims_var_output: "{{ lookup( 'env', 'JIMSVAR') }}"
+    - name: print out the value of JIMSVAR
+      debug:
+        var: jims_var_output
+
+    - name: lookup the contents of a file
+      set_fact:
+        file_contents: "{{ lookup( 'file', 'jimsfile.txt') }}"
+    - name: print out the contents of the file
+      debug:
+        var: file_contents
+
+
+...

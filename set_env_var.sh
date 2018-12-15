@@ -1,0 +1,1 @@
+export JIMSVAR="Jims Variable"
